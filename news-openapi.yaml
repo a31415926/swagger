@@ -568,7 +568,9 @@ paths:
 components:
   securitySchemes:
     OAuth1:
-      type: oauth
+      type: apiKey
+      in: header
+      name: Authorization
       description: |
         OAuth 1.0 авторизация для uCoz API.
         
@@ -587,11 +589,6 @@ components:
         Порядок формирования подписи соответствует спецификации OAuth 1.0.
         
         Для получения токенов доступа необходимо зарегистрировать приложение на сайте uCoz.
-      flows:
-        authorizationCode:
-          authorizationUrl: 'https://www.ucoz.ru/'
-          tokenUrl: 'https://www.ucoz.ru/'
-          scopes: {}
 
   schemas:
     ErrorResponse:

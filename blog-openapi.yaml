@@ -530,13 +530,27 @@ paths:
 components:
   securitySchemes:
     OAuth1:
-      type: oauth
-      description: OAuth 1.0 авторизация для uCoz API
-      flows:
-        authorizationCode:
-          authorizationUrl: 'https://www.ucoz.ru/'
-          tokenUrl: 'https://www.ucoz.ru/'
-          scopes: {}
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        OAuth 1.0 авторизация для uCoz API.
+        
+        Все запросы должны включать следующие параметры OAuth 1.0:
+        - oauth_consumer_key - ключ приложения (consumer key)
+        - oauth_consumer_secret - секрет приложения (consumer secret)
+        - oauth_token - токен доступа пользователя
+        - oauth_token_secret - секрет токена доступа
+        - oauth_nonce - уникальная случайная строка для каждого запроса
+        - oauth_signature_method - метод подписи (HMAC-SHA1)
+        - oauth_timestamp - временная метка запроса
+        - oauth_version - версия OAuth (1.0)
+        - oauth_signature (или auth_signature) - подпись запроса, вычисленная по алгоритму HMAC-SHA1
+        
+        Подпись формируется на основе всех параметров запроса, включая OAuth параметры и параметры самого запроса.
+        Порядок формирования подписи соответствует спецификации OAuth 1.0.
+        
+        Для получения токенов доступа необходимо зарегистрировать приложение на сайте uCoz.
 
   schemas:
     ErrorResponse:
