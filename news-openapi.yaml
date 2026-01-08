@@ -1,0 +1,791 @@
+openapi: 3.0.3
+info:
+  title: uCoz API - News Module
+  description: |
+    API документация для модуля "Новости сайта" uCoz.
+    
+    ## Авторизация OAuth 1.0
+    
+    Все запросы к API требуют авторизации по протоколу OAuth 1.0.
+    
+    ### Необходимые параметры:
+    - `oauth_consumer_key` - ключ приложения (получается при регистрации приложения)
+    - `oauth_consumer_secret` - секрет приложения (получается при регистрации приложения)
+    - `oauth_token` - токен доступа пользователя
+    - `oauth_token_secret` - секрет токена доступа
+    - `oauth_nonce` - уникальная случайная строка для каждого запроса
+    - `oauth_signature_method` - метод подписи (всегда `HMAC-SHA1`)
+    - `oauth_timestamp` - временная метка запроса (Unix timestamp)
+    - `oauth_version` - версия OAuth (всегда `1.0`)
+    - `oauth_signature` (или `auth_signature`) - подпись запроса, вычисленная по алгоритму HMAC-SHA1
+    
+    ### Формирование подписи:
+    Подпись формируется согласно спецификации OAuth 1.0 на основе всех параметров запроса.
+    Все параметры должны быть отсортированы, закодированы и объединены в строку подписи.
+    
+    Для получения токенов доступа необходимо зарегистрировать приложение на сайте uCoz.
+  version: 1.0.0
+  contact:
+    name: uCoz API Support
+    url: https://api.ucoz.net
+
+servers:
+  - url: http://yoursite.ucoz.ru/uapi
+    description: Базовый URL вашего сайта
+
+security:
+  - OAuth1: []
+
+paths:
+  # ============================================
+  # МАТЕРИАЛЫ (ENTRIES)
+  # ============================================
+  /news:
+    get:
+      summary: Получить все материалы модуля
+      description: |
+        Получить список всех материалов модуля "Новости сайта".
+        Количество материалов на странице зависит от настроек модуля.
+      operationId: getNewsEntries
+      tags:
+        - Entries
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Фильтр по дате в формате yyyy-mm-dd или yyyy
+          required: false
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: ID определенного материала
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsEntriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить материал
+      description: Добавить новый материал в модуль "Новости сайта"
+      operationId: addNewsEntry
+      tags:
+        - Entries
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: integer
+                  description: ID категории
+                title:
+                  type: string
+                  description: Название материала
+                description:
+                  type: string
+                  description: Краткое описание материала
+                message:
+                  type: string
+                  description: Полное описание материала
+                comments:
+                  type: string
+                  enum: [yes, no]
+                  description: Позволить оставлять комментарии?
+                ontop:
+                  type: string
+                  enum: [yes, no]
+                  description: Показывать материал всегда сверху?
+                pending:
+                  type: string
+                  enum: [yes, no]
+                  description: В ожидании ли активации материал?
+                end2br_desc:
+                  type: string
+                  enum: [yes, no]
+                  description: Заменять теги переноса на <br /> для краткого описания
+                end2br_msg:
+                  type: string
+                  enum: [yes, no]
+                  description: Заменять теги переноса на <br /> для полного описания
+                other1:
+                  type: string
+                  description: Дополнительное поле 1
+                other2:
+                  type: string
+                  description: Дополнительное поле 2
+                other3:
+                  type: string
+                  description: Дополнительное поле 3
+                other4:
+                  type: string
+                  description: Дополнительное поле 4
+                other5:
+                  type: string
+                  description: Дополнительное поле 5
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать материал
+      description: Отредактировать существующий материал
+      operationId: updateNewsEntry
+      tags:
+        - Entries
+      parameters:
+        - name: id
+          in: query
+          description: ID материала
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  description: Название материала
+                description:
+                  type: string
+                  description: Краткое описание материала
+                message:
+                  type: string
+                  description: Полное описание материала
+                comments:
+                  type: string
+                  enum: [yes, no]
+                ontop:
+                  type: string
+                  enum: [yes, no]
+                pending:
+                  type: string
+                  enum: [yes, no]
+                hgu_title:
+                  type: string
+                  description: ЧПУ материала
+                other1:
+                  type: string
+                other2:
+                  type: string
+                other3:
+                  type: string
+                other4:
+                  type: string
+                other5:
+                  type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /news/posts:
+    delete:
+      summary: Удалить материал
+      description: Удалить материал из модуля
+      operationId: deleteNewsEntry
+      tags:
+        - Entries
+      parameters:
+        - name: id
+          in: query
+          description: ID материала
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /news/tags:
+    post:
+      summary: Добавить/изменить теги материала
+      description: |
+        Добавить, изменить или удалить теги к материалу.
+        - Для удаления тегов отправьте пустой запрос
+        - Для редактирования отправьте полный список тегов, которые должны остаться
+        - Для добавления новых тегов укажите существующие + новые теги
+        Теги перечисляются через запятую.
+      operationId: updateNewsTags
+      tags:
+        - Entries
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+                  description: ID материала
+                tags:
+                  type: string
+                  description: Список тегов через запятую
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # КАТЕГОРИИ (CATEGORIES)
+  # ============================================
+  /news/category:
+    get:
+      summary: Получить список категорий
+      description: Получить все категории модуля "Новости сайта"
+      operationId: getNewsCategories
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID определенной категории
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить категорию
+      description: Добавить новую категорию
+      operationId: addNewsCategory
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Название категории
+                description:
+                  type: string
+                  description: Описание категории
+                hgu_title:
+                  type: string
+                  description: ЧПУ категории
+                position:
+                  type: integer
+                  description: Позиция категории в списке
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать категорию
+      description: Отредактировать существующую категорию
+      operationId: updateNewsCategory
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID категории
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                hgu_title:
+                  type: string
+                position:
+                  type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Удалить категорию
+      description: Удалить категорию
+      operationId: deleteNewsCategory
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID категории
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # КОММЕНТАРИИ (COMMENTS)
+  # ============================================
+  /news/comments:
+    get:
+      summary: Получить комментарии материала
+      description: Получить все комментарии к определенному материалу
+      operationId: getNewsComments
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: query
+          description: ID материала
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить комментарий
+      description: Добавить комментарий к материалу
+      operationId: addNewsComment
+      tags:
+        - Comments
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - id
+                - message
+              properties:
+                id:
+                  type: integer
+                  description: ID материала
+                message:
+                  type: string
+                  description: Текст комментария
+                parent_id:
+                  type: integer
+                  description: ID родительского комментария (для ответа на комментарий)
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать комментарий
+      description: Отредактировать существующий комментарий
+      operationId: updateNewsComment
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: query
+          description: ID комментария
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Текст комментария
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Удалить комментарий
+      description: Удалить комментарий
+      operationId: deleteNewsComment
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: query
+          description: ID комментария
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    OAuth1:
+      type: oauth
+      description: |
+        OAuth 1.0 авторизация для uCoz API.
+        
+        Все запросы должны включать следующие параметры OAuth 1.0:
+        - oauth_consumer_key - ключ приложения (consumer key)
+        - oauth_consumer_secret - секрет приложения (consumer secret)
+        - oauth_token - токен доступа пользователя
+        - oauth_token_secret - секрет токена доступа
+        - oauth_nonce - уникальная случайная строка для каждого запроса
+        - oauth_signature_method - метод подписи (HMAC-SHA1)
+        - oauth_timestamp - временная метка запроса
+        - oauth_version - версия OAuth (1.0)
+        - oauth_signature (или auth_signature) - подпись запроса, вычисленная по алгоритму HMAC-SHA1
+        
+        Подпись формируется на основе всех параметров запроса, включая OAuth параметры и параметры самого запроса.
+        Порядок формирования подписи соответствует спецификации OAuth 1.0.
+        
+        Для получения токенов доступа необходимо зарегистрировать приложение на сайте uCoz.
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://www.ucoz.ru/'
+          tokenUrl: 'https://www.ucoz.ru/'
+          scopes: {}
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          description: Данные об ошибке
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Операция выполнена успешно"
+
+    NewsEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID материала
+        title:
+          type: string
+          description: Название материала
+        hgu_title:
+          type: string
+          description: ЧПУ материала
+        description:
+          type: string
+          description: Краткое описание материала
+        message:
+          type: string
+          description: Полное описание материала
+        entry_url:
+          type: string
+          format: uri
+          description: Полная ссылка на материал
+        author:
+          type: string
+          description: Полное имя автора материала
+        add_date:
+          type: string
+          description: Время добавления материала
+        reads:
+          type: integer
+          description: Количество просмотров материала
+        comments:
+          type: string
+          enum: [yes, no]
+          description: Позволить оставлять комментарии?
+        ontop:
+          type: string
+          enum: [yes, no]
+          description: Показывать материал всегда сверху?
+        pending:
+          type: string
+          enum: [yes, no]
+          description: В ожидании ли активации материал?
+        rating:
+          type: number
+          description: Рейтинг материала
+        rate_num:
+          type: integer
+          description: Количество голосов (рейтинг)
+        rate_sum:
+          type: integer
+          description: Общая сумма рейтинга
+        category:
+          $ref: '#/components/schemas/Category'
+        other1:
+          type: string
+          description: Дополнительное поле 1
+        other2:
+          type: string
+          description: Дополнительное поле 2
+        other3:
+          type: string
+          description: Дополнительное поле 3
+        other4:
+          type: string
+          description: Дополнительное поле 4
+        other5:
+          type: string
+          description: Дополнительное поле 5
+        prev_entry_url:
+          type: string
+          format: uri
+          description: Полная ссылка на предыдущий материал
+        next_entry_url:
+          type: string
+          format: uri
+          description: Полная ссылка на следующий материал
+
+    NewsEntriesResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Номер текущей страницы
+        pages_list:
+          type: string
+          description: Общее количество страниц в модуле
+        per_page:
+          type: integer
+          description: Количество материалов на страницу
+        news:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsEntry'
+        total_news:
+          type: integer
+          description: Общее количество материалов в модуле
+
+    NewsEntryResponse:
+      allOf:
+        - $ref: '#/components/schemas/NewsEntry'
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID категории
+        name:
+          type: string
+          description: Название категории
+        description:
+          type: string
+          description: Описание категории
+        url:
+          type: string
+          format: uri
+          description: Ссылка на категорию
+        hgu_title:
+          type: string
+          description: ЧПУ категории
+        position:
+          type: integer
+          description: Позиция категории в списке
+        entry_count:
+          type: integer
+          description: Количество материалов в категории
+        access2category:
+          type: array
+          description: Группы, имеющие доступ к просмотру категории
+        access2add:
+          type: array
+          description: Права на добавление материалов в категорию
+
+    CategoriesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Category'
+
+    CategoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID комментария
+        message:
+          type: string
+          description: Текст комментария
+        author:
+          type: string
+          description: Автор комментария
+        add_date:
+          type: string
+          description: Дата добавления комментария
+        parent_id:
+          type: integer
+          description: ID родительского комментария
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+          description: Вложенные комментарии
+
+    CommentsResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    CommentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Comment'

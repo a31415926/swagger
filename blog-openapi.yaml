@@ -1,0 +1,699 @@
+openapi: 3.0.3
+info:
+  title: uCoz API - Blog Module
+  description: |
+    API документация для модуля "Блог" uCoz.
+    
+    ## Авторизация OAuth 1.0
+    
+    Все запросы к API требуют авторизации по протоколу OAuth 1.0.
+  version: 1.0.0
+  contact:
+    name: uCoz API Support
+    url: https://api.ucoz.net
+
+servers:
+  - url: http://yoursite.ucoz.ru/uapi
+    description: Базовый URL вашего сайта
+
+security:
+  - OAuth1: []
+
+paths:
+  /blog:
+    get:
+      summary: Получить все материалы модуля
+      description: Получить список всех материалов модуля "Блог"
+      operationId: getBlogEntries
+      tags:
+        - Entries
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+        - name: id
+          in: query
+          description: ID определенного материала
+          required: false
+          schema:
+            type: integer
+        - name: date
+          in: query
+          description: Фильтр по дате в формате yyyy-mm-dd или yyyy
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogEntriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить материал
+      description: Добавить новый материал в модуль "Блог"
+      operationId: addBlogEntry
+      tags:
+        - Entries
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                category:
+                  type: integer
+                  description: ID категории
+                title:
+                  type: string
+                  description: Название материала
+                description:
+                  type: string
+                  description: Краткое описание материала
+                message:
+                  type: string
+                  description: Полное описание материала
+                comments:
+                  type: string
+                  enum: [yes, no]
+                ontop:
+                  type: string
+                  enum: [yes, no]
+                pending:
+                  type: string
+                  enum: [yes, no]
+                file1:
+                  type: string
+                  format: binary
+                  description: Изображение материала (file2, file3..file20)
+                meta_title:
+                  type: string
+                  description: Meta Title
+                meta_description:
+                  type: string
+                  description: Meta Description
+                meta_keywords:
+                  type: string
+                  description: Meta Keywords
+                other1:
+                  type: string
+                other2:
+                  type: string
+                other3:
+                  type: string
+                other4:
+                  type: string
+                other5:
+                  type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать материал
+      description: Отредактировать существующий материал
+      operationId: updateBlogEntry
+      tags:
+        - Entries
+      parameters:
+        - name: id
+          in: query
+          description: ID материала
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                message:
+                  type: string
+                comments:
+                  type: string
+                  enum: [yes, no]
+                ontop:
+                  type: string
+                  enum: [yes, no]
+                pending:
+                  type: string
+                  enum: [yes, no]
+                hgu_title:
+                  type: string
+                meta_title:
+                  type: string
+                meta_description:
+                  type: string
+                meta_keywords:
+                  type: string
+                other1:
+                  type: string
+                other2:
+                  type: string
+                other3:
+                  type: string
+                other4:
+                  type: string
+                other5:
+                  type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /blog/posts:
+    delete:
+      summary: Удалить материал
+      description: Удалить материал из модуля
+      operationId: deleteBlogEntry
+      tags:
+        - Entries
+      parameters:
+        - name: id
+          in: query
+          description: ID материала
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /blog/tags:
+    post:
+      summary: Добавить/изменить теги материала
+      description: Добавить, изменить или удалить теги к материалу
+      operationId: updateBlogTags
+      tags:
+        - Entries
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - id
+              properties:
+                id:
+                  type: integer
+                  description: ID материала
+                tags:
+                  type: string
+                  description: Список тегов через запятую
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /blog/category:
+    get:
+      summary: Получить список категорий
+      description: Получить все категории модуля
+      operationId: getBlogCategories
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID определенной категории
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить категорию
+      description: Добавить новую категорию
+      operationId: addBlogCategory
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Название категории
+                description:
+                  type: string
+                hgu_title:
+                  type: string
+                position:
+                  type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать категорию
+      description: Отредактировать существующую категорию
+      operationId: updateBlogCategory
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID категории
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                hgu_title:
+                  type: string
+                position:
+                  type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Удалить категорию
+      description: Удалить категорию
+      operationId: deleteBlogCategory
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID категории
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /blog/comments:
+    get:
+      summary: Получить комментарии материала
+      description: Получить все комментарии к определенному материалу
+      operationId: getBlogComments
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: query
+          description: ID материала
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить комментарий
+      description: Добавить комментарий к материалу
+      operationId: addBlogComment
+      tags:
+        - Comments
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - id
+                - message
+              properties:
+                id:
+                  type: integer
+                  description: ID материала
+                message:
+                  type: string
+                  description: Текст комментария
+                parent_id:
+                  type: integer
+                  description: ID родительского комментария
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать комментарий
+      description: Отредактировать существующий комментарий
+      operationId: updateBlogComment
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: query
+          description: ID комментария
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Удалить комментарий
+      description: Удалить комментарий
+      operationId: deleteBlogComment
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: query
+          description: ID комментария
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    OAuth1:
+      type: oauth
+      description: OAuth 1.0 авторизация для uCoz API
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://www.ucoz.ru/'
+          tokenUrl: 'https://www.ucoz.ru/'
+          scopes: {}
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+
+    BlogEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        hgu_title:
+          type: string
+        description:
+          type: string
+        message:
+          type: string
+        entry_url:
+          type: string
+          format: uri
+        author:
+          type: string
+        add_date:
+          type: string
+        reads:
+          type: integer
+        comments:
+          type: string
+          enum: [yes, no]
+        ontop:
+          type: string
+          enum: [yes, no]
+        pending:
+          type: string
+          enum: [yes, no]
+        rating:
+          type: number
+        rate_num:
+          type: integer
+        rate_sum:
+          type: integer
+        category:
+          $ref: '#/components/schemas/Category'
+        meta_title:
+          type: string
+        meta_description:
+          type: string
+        meta_keywords:
+          type: string
+        prev_entry_url:
+          type: string
+          format: uri
+        next_entry_url:
+          type: string
+          format: uri
+        other1:
+          type: string
+        other2:
+          type: string
+        other3:
+          type: string
+        other4:
+          type: string
+        other5:
+          type: string
+
+    BlogEntriesResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        pages_list:
+          type: string
+        per_page:
+          type: integer
+        blogs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BlogEntry'
+        total_blog:
+          type: integer
+
+    BlogEntryResponse:
+      allOf:
+        - $ref: '#/components/schemas/BlogEntry'
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+        hgu_title:
+          type: string
+        position:
+          type: integer
+        entry_count:
+          type: integer
+        access2category:
+          type: array
+        access2add:
+          type: array
+
+    CategoriesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Category'
+
+    CategoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/Category'
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        author:
+          type: string
+        add_date:
+          type: string
+        parent_id:
+          type: integer
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    CommentsResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    CommentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Comment'
