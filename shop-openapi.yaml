@@ -1,0 +1,1394 @@
+openapi: 3.0.3
+info:
+  title: uCoz API - Shop Module
+  description: |
+    API документация для модуля "Интернет-магазин" uCoz.
+    
+    ## Авторизация OAuth 1.0
+    
+    Все запросы к API требуют авторизации по протоколу OAuth 1.0.
+    
+    ### Необходимые параметры:
+    - `oauth_consumer_key` - ключ приложения (получается при регистрации приложения)
+    - `oauth_consumer_secret` - секрет приложения (получается при регистрации приложения)
+    - `oauth_token` - токен доступа пользователя
+    - `oauth_token_secret` - секрет токена доступа
+    - `oauth_nonce` - уникальная случайная строка для каждого запроса
+    - `oauth_signature_method` - метод подписи (всегда `HMAC-SHA1`)
+    - `oauth_timestamp` - временная метка запроса (Unix timestamp)
+    - `oauth_version` - версия OAuth (всегда `1.0`)
+    - `oauth_signature` (или `auth_signature`) - подпись запроса, вычисленная по алгоритму HMAC-SHA1
+    
+    ### Формирование подписи:
+    Подпись формируется согласно спецификации OAuth 1.0 на основе всех параметров запроса.
+    Все параметры должны быть отсортированы, закодированы и объединены в строку подписи.
+    
+    Для получения токенов доступа необходимо зарегистрировать приложение на сайте uCoz.
+  version: 1.0.0
+  contact:
+    name: uCoz API Support
+    url: https://api.ucoz.net
+
+servers:
+  - url: http://yoursite.ucoz.ru/uapi
+    description: Базовый URL вашего сайта
+
+security:
+  - OAuth1: []
+
+paths:
+  # ============================================
+  # КОРЗИНА (BASKET)
+  # ============================================
+  /shop/basket/:
+    get:
+      summary: Получить содержимое корзины
+      description: Показывает весь текущий список товаров, которые находятся в вашей корзине
+      operationId: getBasket
+      tags:
+        - Basket
+      parameters:
+        - name: user_id
+          in: query
+          description: ID пользователя. Если указано, то будет возвращено информацию о корзине указанного пользователя. Учитывается, только если пользователь, от имени которого делается запрос, имеет права администратора.
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasketResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить в корзину
+      description: Добавить товар в корзину
+      operationId: addToBasket
+      tags:
+        - Basket
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [add]
+        - name: id
+          in: query
+          description: ID товара
+          required: true
+          schema:
+            type: integer
+        - name: cnt
+          in: query
+          description: Количество единиц товара (значение по умолчанию 1)
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: opt
+          in: query
+          description: Строка с выбранными опциями в формате "<OPTION_ID>-<ID_SELECTED_VALUE>:<OPTION_ID>-<ID_SELECTED_VALUE>:..."
+          required: false
+          schema:
+            type: string
+        - name: now
+          in: query
+          description: Признак, указывающий что нужно сделать операцию "Купить сейчас"
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1]
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasketAddResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Изменение количества товара в корзине
+      description: Изменить количество товара в корзине
+      operationId: updateBasketItem
+      tags:
+        - Basket
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [put]
+        - name: id
+          in: query
+          description: ID записи товарной позиции в корзине
+          required: true
+          schema:
+            type: integer
+        - name: cnt
+          in: query
+          description: Количество единиц товара (значение по умолчанию 1)
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: opt
+          in: query
+          description: Строка с выбранными опциями
+          required: false
+          schema:
+            type: string
+        - name: now
+          in: query
+          description: Признак операции "Купить сейчас"
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1]
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasketUpdateResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Удалить товар из корзины
+      description: Удалить товар из корзины. Если не указать параметр id – произойдет очистка корзины
+      operationId: deleteFromBasket
+      tags:
+        - Basket
+      parameters:
+        - name: id
+          in: query
+          description: ID записи товарной позиции в корзине, которую нужно удалить. Если параметр не указан, то будет выполнена очистка корзины
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BasketDeleteResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # КАТЕГОРИИ (CATEGORIES)
+  # ============================================
+  /shop/request:
+    get:
+      summary: Получить список категорий
+      description: Параметр page=categories имитирует работу переменной $CATEGORIES$ в шаблонизаторе uCoz (вывод всех категорий)
+      operationId: getCategories
+      tags:
+        - Categories
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [categories]
+        - name: parent_id
+          in: query
+          description: ID родительской категории
+          required: false
+          schema:
+            type: integer
+        - name: get_globals
+          in: query
+          description: Указывает на то, что нужно получить список глобальных категорий магазина
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1]
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /shop/edit_cat:
+    post:
+      summary: Операции с категориями
+      description: Добавление, изменение, управление изображением и видимостью категорий
+      operationId: editCategory
+      tags:
+        - Categories
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          description: Режим операции
+          schema:
+            type: string
+            enum: [add, edit, img, show, hide]
+        - name: id
+          in: query
+          description: ID категории (обязателен для mode=edit, mode=img, mode=show, mode=hide)
+          required: false
+          schema:
+            type: integer
+        - name: name
+          in: query
+          description: Название категории (обязателен для mode=add)
+          required: false
+          schema:
+            type: string
+        - name: pid
+          in: query
+          description: ID родительской категории
+          required: false
+          schema:
+            type: integer
+        - name: global_cat
+          in: query
+          description: ID категории группы товаров
+          required: false
+          schema:
+            type: integer
+        - name: dscr
+          in: query
+          description: Описание категории
+          required: false
+          schema:
+            type: string
+        - name: meta_title
+          in: query
+          description: HTML Заголовок страницы
+          required: false
+          schema:
+            type: string
+        - name: meta_dscr
+          in: query
+          description: HTML meta description
+          required: false
+          schema:
+            type: string
+        - name: url
+          in: query
+          description: URI (ЧПУ) категории
+          required: false
+          schema:
+            type: string
+        - name: pos
+          in: query
+          description: Позиция категории в списке категорий
+          required: false
+          schema:
+            type: integer
+        - name: cat_img
+          in: query
+          description: Путь к файлу на сервере из которого отсылается API-запрос
+          required: false
+          schema:
+            type: string
+        - name: view_groups
+          in: query
+          description: Список, через запятую, ID групп которые будут иметь доступ к категории
+          required: false
+          schema:
+            type: string
+        - name: add_groups
+          in: query
+          description: Список, через запятую, ID групп которые будут иметь возможность добавлять материалы в категорию
+          required: false
+          schema:
+            type: string
+        - name: exclude_from_discount
+          in: query
+          description: Отключает/включает для категории признак "Исключить из скидок"
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1]
+        - name: del
+          in: query
+          description: Флаг удаления изображения (для mode=img). Не учитывается, если указан параметр "cat_img"
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1]
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryEditResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # ВАЛЮТА (CURRENCY)
+  # ============================================
+  /shop/setcurrrate:
+    post:
+      summary: Изменить курс валюты магазина
+      description: Изменить курс валюты магазина
+      operationId: setCurrencyRate
+      tags:
+        - Currency
+      parameters:
+        - name: curr_code
+          in: query
+          description: Код валюты. Должен соответствовать одному из кодов валют, указанному в настройках магазина
+          required: true
+          schema:
+            type: string
+        - name: curr_rate
+          in: query
+          description: Курс валюты. Должен быть ненулевым
+          required: true
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrencySetResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /shop/getshopdata/:
+    get:
+      summary: Получение списка валют
+      description: Получить список валют магазина
+      operationId: getCurrencies
+      tags:
+        - Currency
+      parameters:
+        - name: page
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [currencies_list]
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CurrenciesListResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # ЗАКАЗЫ (ORDERS)
+  # ============================================
+  /shop/checkout/:
+    get:
+      summary: Данные для оформления
+      description: Получить данные для начала оформления заказа
+      operationId: getCheckout
+      tags:
+        - Orders
+      parameters:
+        - name: promo_code
+          in: query
+          description: Промокод
+          required: false
+          schema:
+            type: string
+        - name: custom_delivery_tax
+          in: query
+          description: Такса за доставку заказа. Учитывается, если для способа доставки по умолчанию отмечен параметр "Использовать модуль расчёта стоимости доставки" и для которого указано значение "Внешний калькулятор"
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Пересчет и изменение неоформленного заказа
+      description: Пересчет товара или изменение неоформленного заказа
+      operationId: updateCheckout
+      tags:
+        - Orders
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [recalc, edit]
+        - name: cnt_REC_ID
+          in: query
+          description: Количество единиц товара. REC_ID - ID записи товарной позиции в заказе
+          required: false
+          schema:
+            type: integer
+        - name: del_REC_ID
+          in: query
+          description: Признак удаления единицы товара из заказа. REC_ID - ID записи товарной позиции в заказе
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1]
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CheckoutResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Оформление заказа
+      description: Оформить заказ
+      operationId: submitCheckout
+      tags:
+        - Orders
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                payment_id:
+                  type: integer
+                  description: ID способа оплаты
+                delivery_id:
+                  type: integer
+                  description: ID способа доставки
+                promo_code:
+                  type: string
+                  description: Промокод
+                custom_delivery_tax:
+                  type: string
+                  description: Такса за доставку
+                field_N:
+                  type: string
+                  description: Значение дополнительного поля заказа (N - номер поля)
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderSubmitResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /shop/invoices/:
+    get:
+      summary: Получить список заказов (мои заказы)
+      description: Получить список заказов с возможностью фильтрации
+      operationId: getInvoices
+      tags:
+        - Orders
+      parameters:
+        - name: pnum
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+        - name: user
+          in: query
+          description: Фильтр - ID пользователя, сформировавшего заказ. Учитывается, только если пользователь, от имени которого делается запрос, имеет права администратора
+          required: false
+          schema:
+            type: integer
+        - name: hide
+          in: query
+          description: Фильтр - группа заказа (0 - В работе, 1 - В архиве, 2 - В корзине)
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1, 2]
+        - name: status
+          in: query
+          description: Фильтр - статус заказа
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1, 2, 3, 4, 5, 7, 8, 9]
+        - name: inv_sum
+          in: query
+          description: Фильтр - диапазон сумм заказов в формате "sum1|sum2"
+          required: false
+          schema:
+            type: string
+        - name: courier
+          in: query
+          description: Фильтр - курьер
+          required: false
+          schema:
+            type: string
+        - name: cdate
+          in: query
+          description: Фильтр - период доставки в формате "date1|date2" (YYYY-MM-DD HH:MI:SS)
+          required: false
+          schema:
+            type: string
+        - name: payment
+          in: query
+          description: Фильтр - ID способа оплаты
+          required: false
+          schema:
+            type: integer
+        - name: delivery
+          in: query
+          description: Фильтр - ID способа доставки
+          required: false
+          schema:
+            type: integer
+        - name: id
+          in: query
+          description: Фильтр - ID заказа(ов), перечисленных через запятую
+          required: false
+          schema:
+            type: string
+        - name: date
+          in: query
+          description: Фильтр - диапазон дат добавления в формате "date1|date2" (YYYY-MM-DD HH:MI:SS)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoicesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Операции с заказами
+      description: |
+        Назначение группы, курьера или статуса заказам.
+        
+        **Режимы работы:**
+        
+        ### mode=hide - Назначение группы заказу
+        - Обязательные: `mode=hide`, `ids`
+        - Опциональные: `hide` (по умолчанию 0 - "В работе")
+        
+        ### mode=setCourier - Назначение курьера заказу
+        - Обязательные: `mode=setCourier`, `ids`, `group_courier`
+        
+        ### mode=status - Назначение статуса заказу
+        - Обязательные: `mode=status`, `ids`, `status`
+      operationId: updateInvoices
+      tags:
+        - Orders
+      parameters:
+        - name: mode
+          in: query
+          required: true
+          description: Режим операции
+          schema:
+            type: string
+            enum: [hide, setCourier, status]
+        - name: ids
+          in: query
+          description: ID заказа(ов), через запятую
+          required: true
+          schema:
+            type: string
+        - name: hide
+          in: query
+          description: |
+            Группа заказа (обязателен для mode=hide).
+            
+            Возможные значения:
+            - 0 - "В работе" (по умолчанию)
+            - 1 - "В архиве"
+            - 2 - "В корзине"
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1, 2]
+            default: 0
+        - name: group_courier
+          in: query
+          description: |
+            Логин пользователя-курьера (обязателен для mode=setCourier).
+            
+            Логин пользователя, которого нужно назначить курьером для заказа(ов).
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: |
+            ID статуса заказа (обязателен для mode=status).
+            
+            Возможные значения:
+            - 0 - Новый
+            - 1 - Оплачивается
+            - 2 - Оплачен
+            - 3 - В обработке
+            - 4 - Готов
+            - 5 - Доставляется
+            - 7 - Доставлен
+            - 8 - Завершён
+            - 9 - Отменён
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1, 2, 3, 4, 5, 7, 8, 9]
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoicesUpdateResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /shop/order/:
+    get:
+      summary: Получить определенный заказ
+      description: Получить данные определенного заказа по его хэшу
+      operationId: getOrder
+      tags:
+        - Orders
+      parameters:
+        - name: order
+          in: query
+          description: Хэш заказа (ORDER_HASH)
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить товар в заказ
+      description: Добавить новый товар в уже существующий заказ
+      operationId: addGoodsToOrder
+      tags:
+        - Orders
+      parameters:
+        - name: order
+          in: query
+          description: Хэш заказа (ORDER_HASH)
+          required: true
+          schema:
+            type: string
+        - name: id
+          in: query
+          description: ID товара, который нужно добавить в заказ
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Модификация заказа
+      description: Модификация состава заказа, полей заказа, статуса или примечания
+      operationId: updateOrder
+      tags:
+        - Orders
+      parameters:
+        - name: order
+          in: query
+          description: Хэш заказа (ORDER_HASH)
+          required: true
+          schema:
+            type: string
+        - name: mode
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [goods, fields, status, note]
+        - name: cnt_REC_ID
+          in: query
+          description: Количество единиц товара (для mode=goods). REC_ID - ID записи товарной позиции в заказе
+          required: false
+          schema:
+            type: integer
+        - name: del_REC_ID
+          in: query
+          description: Признак удаления единицы товара (для mode=goods). REC_ID - ID записи товарной позиции в заказе
+          required: false
+          schema:
+            type: integer
+            enum: [0, 1]
+        - name: field_N
+          in: query
+          description: Значение дополнительного поля заказа (для mode=fields). N - номер поля
+          required: false
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: ID статуса заказа (для mode=status)
+          required: false
+          schema:
+            type: integer
+        - name: note
+          in: query
+          description: Примечание к заказу (для mode=note)
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    OAuth1:
+      type: oauth
+      description: |
+        OAuth 1.0 авторизация для uCoz API.
+        
+        Все запросы должны включать следующие параметры OAuth 1.0:
+        - oauth_consumer_key - ключ приложения (consumer key)
+        - oauth_consumer_secret - секрет приложения (consumer secret)
+        - oauth_token - токен доступа пользователя
+        - oauth_token_secret - секрет токена доступа
+        - oauth_nonce - уникальная случайная строка для каждого запроса
+        - oauth_signature_method - метод подписи (HMAC-SHA1)
+        - oauth_timestamp - временная метка запроса
+        - oauth_version - версия OAuth (1.0)
+        - oauth_signature (или auth_signature) - подпись запроса, вычисленная по алгоритму HMAC-SHA1
+        
+        Подпись формируется на основе всех параметров запроса, включая OAuth параметры и параметры самого запроса.
+        Порядок формирования подписи соответствует спецификации OAuth 1.0.
+        
+        Для получения токенов доступа необходимо зарегистрировать приложение на сайте uCoz.
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://www.ucoz.ru/'
+          tokenUrl: 'https://www.ucoz.ru/'
+          scopes: {}
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          description: Данные об ошибке
+
+    BasketData:
+      type: object
+      properties:
+        info:
+          type: string
+          description: Дополнительная информация по корзине (предупреждения, предложения)
+        weight:
+          type: number
+          description: Суммарный вес всех товаров в корзине
+        items_count:
+          type: integer
+          description: Количество товарных позиций в корзине
+        goods_count:
+          type: integer
+          description: Количество товаров в корзине
+        discount:
+          type: number
+          description: Суммарная скидка по корзине
+        total:
+          type: number
+          description: Суммарная стоимость корзины (в у.е. магазина)
+        items:
+          type: object
+          description: Секция с данными по товарам корзины. ID подсекции - порядковый номер товарной позиции в корзине
+          additionalProperties:
+            $ref: '#/components/schemas/BasketItem'
+
+    BasketItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID записи товарной позиции
+        entry_id:
+          type: integer
+          description: ID товара
+        entry_title:
+          type: string
+          description: Наименование товара
+        entry_cat_id:
+          type: integer
+          description: ID категории товара
+        entry_brand:
+          type: string
+          description: Значение поля "Производитель"
+        entry_photo:
+          type: object
+          description: Секция с данными изображения "по умолчанию"
+          properties:
+            small:
+              type: string
+              format: uri
+              description: URL к изображению-иконке товара
+            thumb:
+              type: string
+              format: uri
+              description: URL к изображению-превю товара
+            photo:
+              type: string
+              format: uri
+              description: URL к полному изображению товара
+        entry_hgu:
+          type: string
+          description: ЧПУ товара
+        entry_shop_url:
+          type: string
+          format: uri
+          description: URL товара в магазине
+        entry_type:
+          type: integer
+          description: Тип товара (0 - материальный товар, 1 - товар-файл, 2 - товар-электронный код, 3 - товар-услуга)
+          enum: [0, 1, 2, 3]
+        entry_price:
+          type: number
+          description: Цена товара
+        entry_price_in:
+          type: number
+          description: Входящая цена товара
+        entry_price_vat:
+          type: number
+          description: Цена товара с НДС (если в настройках магазина включен расчет НДС)
+        entry_price_vat_eval:
+          type: number
+          description: Цена товара без НДС (если в настройках магазина включен расчет НДС)
+        over:
+          type: number
+          description: Наценка по товару с учетом всех выбранных опций
+        cnt:
+          type: integer
+          description: Количество единиц товара
+        summ:
+          type: number
+          description: Стоимость товара с учетом всех наценок и количества единиц товара
+        entry_unit:
+          type: string
+          description: Значение поля "Единица"
+        entry_weight:
+          type: number
+          description: Вес товара
+        entry_art_no:
+          type: string
+          description: Значение поля "Артикул"
+        entry_warr:
+          type: string
+          description: Значение поля "Гарантия"
+        entry_others:
+          type: object
+          description: Секция со значениями дополнительных полей товара
+        entry_options:
+          type: string
+          description: Выбранные опции товара
+        entry_is_in_discount:
+          type: string
+          description: Признак, что товар включается в расчет скидок
+        entry_is_in_wishlist:
+          type: string
+          description: Признак, что товар добавлен в список желаний текущего пользователя
+        entry_add_uid:
+          type: integer
+          description: ID пользователя, добавившего товар
+        entry_add_user:
+          type: string
+          description: Логин пользователя, добавившего товар
+
+    BasketResponse:
+      type: object
+      properties:
+        success:
+          $ref: '#/components/schemas/BasketData'
+
+    BasketAddResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Товар успешно добавлен в корзину"
+            info:
+              type: string
+            weight:
+              type: number
+            items_count:
+              type: integer
+            goods_count:
+              type: integer
+            discount:
+              type: number
+            total:
+              type: number
+            items:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/BasketItem'
+
+    BasketUpdateResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Количество успешно изменено"
+            info:
+              type: string
+            weight:
+              type: number
+            items_count:
+              type: integer
+            goods_count:
+              type: integer
+            discount:
+              type: number
+            total:
+              type: number
+            items:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/BasketItem'
+
+    BasketDeleteResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Товар успешно удален из корзины"
+            info:
+              type: string
+            weight:
+              type: number
+            items_count:
+              type: integer
+            goods_count:
+              type: integer
+            discount:
+              type: number
+            total:
+              type: number
+            items:
+              type: object
+              additionalProperties:
+                $ref: '#/components/schemas/BasketItem'
+
+    CategoryData:
+      type: object
+      description: Секция с данными категории
+      properties:
+        id:
+          type: integer
+          description: ID категории
+        pid:
+          type: integer
+          description: ID родительской категории
+        global_cat:
+          type: integer
+          description: ID категории группы товаров
+        name:
+          type: string
+          description: Название категории
+        url:
+          type: string
+          description: URI категории
+        cat_img:
+          type: string
+          format: uri
+          description: Полная ссылка на изображение категории
+        pos:
+          type: integer
+          description: Позиция категории в списке категорий
+        view_groups:
+          type: string
+          description: Список, через двоеточие, ID групп которые имеют доступ к категории
+        add_groups:
+          type: string
+          description: Список, через двоеточие, ID групп которые имеют возможность добавлять материалы в категорию
+
+    CategoriesResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          description: Объект с категориями, где ключ - порядковый номер категории
+          additionalProperties:
+            $ref: '#/components/schemas/CategoryData'
+
+    CategoryEditResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Категория успешно добавлена"
+            cat_data:
+              $ref: '#/components/schemas/CategoryData'
+
+    CurrencySetResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Курс валюты XXX успешно изменен"
+
+    CurrencyItem:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Название валюты
+        code:
+          type: string
+          description: Код валюты
+        rate:
+          type: number
+          description: Курс валюты
+        label:
+          type: string
+          description: Подпись валюты ($, руб., грн.)
+        label_pos:
+          type: string
+          description: Размещение подписи валюты (впереди или сзади)
+        is_default:
+          type: integer
+          description: Признак того, что в магазине валюта является валютой по умолчанию
+          enum: [0, 1]
+
+    CurrenciesListResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          description: Объект со списком валют, где ключ - порядковый номер валюты
+          additionalProperties:
+            $ref: '#/components/schemas/CurrencyItem'
+
+    # ============================================
+    # СХЕМЫ ДЛЯ ЗАКАЗОВ
+    # ============================================
+    CheckoutResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          description: Данные для оформления заказа
+          properties:
+            num_entries:
+              type: integer
+              description: Суммарное количество товарных позиций в заказе
+            order_content:
+              type: object
+              description: Секция с информацией по товарам заказа
+            order_fields:
+              type: object
+              description: Секция с описанием дополнительных полей заказа
+            order_data:
+              type: object
+              description: Секция с данными заказа
+            payment_list:
+              type: object
+              description: Секция со списком доступных способов оплаты
+            current_payment_id:
+              type: integer
+              description: ID выбранного способа оплаты
+            delivery_list:
+              type: object
+              description: Секция со списком доступных способов доставки
+            current_delivery_id:
+              type: integer
+              description: ID выбранного способа доставки
+            msg:
+              type: string
+              description: Сообщение (например, "Ваша корзина пуста")
+
+    OrderSubmitResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Заказ успешно оформлен"
+            order_hash:
+              type: string
+              description: Хэш заказа для дальнейшей работы с ним
+
+    InvoicesResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            orders:
+              type: object
+              description: Секция с данными о заказах
+              additionalProperties:
+                $ref: '#/components/schemas/InvoiceItem'
+            order_status:
+              type: array
+              description: Список всех возможных статусов заказа
+            order_fields:
+              type: object
+              description: Секция с описанием дополнительных полей заказа
+            order_hide:
+              type: array
+              description: Список всех возможных групп заказа
+            order_uids:
+              type: array
+              description: Список ID пользователей, заказы которых попали в выборку
+            count:
+              type: integer
+              description: Суммарное количество заказов, попавших в выборку
+            page:
+              type: integer
+              description: Текущая страница выборки
+            pages_cnt:
+              type: integer
+              description: Количество страниц выборки
+            per_page:
+              type: integer
+              description: Количество заказов на одной странице выборки
+            total:
+              type: number
+              description: Оборотная сумма по заказам попавшим в выборку
+            profit:
+              type: number
+              description: Суммарная прибыль по заказам попавшим в выборку
+
+    InvoiceItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID заказа (номер заказа)
+        nom:
+          type: string
+          description: Отформатированный ID заказа (номер заказа)
+        order_hash:
+          type: string
+          description: Хэш id заказа для получения или изменения данных по заказу
+        uid:
+          type: integer
+          description: ID пользователя, оформившего заказ
+        user:
+          type: string
+          description: Логин пользователя, оформившего заказ
+        akey:
+          type: string
+          description: Ключ для формирования auth-ссылки на страницу просмотра заказа
+        cnt:
+          type: integer
+          description: Количество товаров в заказе
+        amount:
+          type: number
+          description: Суммарная стоимость товарных позиций в заказе
+        profit:
+          type: number
+          description: Суммарная прибыль по заказу
+        discount:
+          type: object
+          description: Информация о скидке по заказу
+        currency:
+          type: object
+          description: Валюта, в которой был оформлен заказ
+        payment:
+          type: object
+          description: Информация о способе оплаты заказа
+        delivery:
+          type: object
+          description: Информация о способе доставки заказа
+        weight:
+          type: number
+          description: Суммарный вес заказа
+        fields:
+          type: object
+          description: Секция со значениями дополнительных полей заказа
+        map:
+          type: object
+          description: Секция с информацией об адресе google maps
+        status:
+          type: object
+          description: Статус заказа
+        hide:
+          type: integer
+          description: Группа, к которой относится заказ (0 - "В работе", 1 - "В архиве", 2 - "В корзине")
+          enum: [0, 1, 2]
+        add_date:
+          type: string
+          description: Дата добавления заказа
+        mod_date:
+          type: string
+          description: Дата последнего изменения заказа
+        rem:
+          type: string
+          description: Лог заказа
+        note:
+          type: string
+          description: Примечания к заказу
+        ip:
+          type: string
+          description: IP, с которого был сделан заказ
+        refhost:
+          type: string
+          description: Хост реферальной ссылки с которой пришел пользователь
+        referer:
+          type: string
+          description: URL реферальной ссылки с которой пришел пользователь
+
+    InvoicesUpdateResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Заказ(ы) перенесены ..."
+
+    OrderResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            order_id:
+              type: integer
+              description: ID заказа (номер заказа)
+            order_nom:
+              type: string
+              description: Отформатированный ID заказа (номер заказа)
+            order_goods:
+              type: object
+              description: Секция с информацией о товарах заказа
+            order_digital_goods:
+              type: object
+              description: Секция с информацией о цифровых товарах заказа
+            order_data:
+              type: object
+              description: Секция с данными по заказу
