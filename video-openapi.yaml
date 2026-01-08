@@ -1,0 +1,609 @@
+openapi: 3.0.3
+info:
+  title: uCoz API - Video Module
+  description: |
+    API документация для модуля "Видео" uCoz.
+    
+    ## Авторизация OAuth 1.0
+    
+    Все запросы к API требуют авторизации по протоколу OAuth 1.0.
+  version: 1.0.0
+  contact:
+    name: uCoz API Support
+    url: https://api.ucoz.net
+
+servers:
+  - url: http://yoursite.ucoz.ru/uapi
+    description: Базовый URL вашего сайта
+
+security:
+  - OAuth1: []
+
+paths:
+  /video:
+    get:
+      summary: Получить все материалы модуля
+      description: Получить список всех видео материалов модуля
+      operationId: getVideoEntries
+      tags:
+        - Entries
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          description: Тип сортировки
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoEntriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить видео
+      description: Добавить новое видео в модуль
+      operationId: addVideoEntry
+      tags:
+        - Entries
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - category
+                - title
+                - embobject
+              properties:
+                category:
+                  type: integer
+                  description: ID категории
+                title:
+                  type: string
+                  description: Название видео
+                description:
+                  type: string
+                  description: Описание видео
+                embobject:
+                  type: string
+                  description: HTML-код видео (embed код)
+                comments:
+                  type: string
+                  enum: [yes, no]
+                ontop:
+                  type: string
+                  enum: [yes, no]
+                pending:
+                  type: string
+                  enum: [yes, no]
+                author_name:
+                  type: string
+                  description: Имя автора
+                author_email:
+                  type: string
+                  format: email
+                  description: Email автора
+                author_site:
+                  type: string
+                  format: uri
+                  description: Сайт автора
+                duration:
+                  type: string
+                  description: Продолжительность видео
+                language:
+                  type: string
+                  description: Язык видео
+                year:
+                  type: string
+                  description: Год видео
+                acters:
+                  type: string
+                  description: Актеры
+                producer:
+                  type: string
+                  description: Продюсеры
+                other1:
+                  type: string
+                other2:
+                  type: string
+                other3:
+                  type: string
+                other4:
+                  type: string
+                other5:
+                  type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать видео
+      description: Отредактировать существующее видео
+      operationId: updateVideoEntry
+      tags:
+        - Entries
+      parameters:
+        - name: id
+          in: query
+          description: ID видео
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                description:
+                  type: string
+                embobject:
+                  type: string
+                comments:
+                  type: string
+                  enum: [yes, no]
+                ontop:
+                  type: string
+                  enum: [yes, no]
+                pending:
+                  type: string
+                  enum: [yes, no]
+                hgu_title:
+                  type: string
+                author_name:
+                  type: string
+                author_email:
+                  type: string
+                  format: email
+                author_site:
+                  type: string
+                  format: uri
+                duration:
+                  type: string
+                language:
+                  type: string
+                year:
+                  type: string
+                acters:
+                  type: string
+                producer:
+                  type: string
+                other1:
+                  type: string
+                other2:
+                  type: string
+                other3:
+                  type: string
+                other4:
+                  type: string
+                other5:
+                  type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /video/posts:
+    delete:
+      summary: Удалить видео
+      description: Удалить видео из модуля
+      operationId: deleteVideoEntry
+      tags:
+        - Entries
+      parameters:
+        - name: id
+          in: query
+          description: ID видео
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /video/category_entry:
+    get:
+      summary: Получить список категорий материалов
+      description: Получить все категории видео материалов
+      operationId: getVideoEntryCategories
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID определенной категории
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /video/channels:
+    get:
+      summary: Получить список каналов
+      description: Получить все каналы модуля
+      operationId: getVideoChannels
+      tags:
+        - Channels
+      parameters:
+        - name: id
+          in: query
+          description: ID определенного канала
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelsResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить канал
+      description: Добавить новый канал
+      operationId: addVideoChannel
+      tags:
+        - Channels
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Название канала
+                description:
+                  type: string
+                  description: Описание канала
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChannelResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /video/comments_entry:
+    get:
+      summary: Получить комментарии видео
+      description: Получить все комментарии к определенному видео
+      operationId: getVideoEntryComments
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: query
+          description: ID видео
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить комментарий к видео
+      description: Добавить комментарий к видео
+      operationId: addVideoEntryComment
+      tags:
+        - Comments
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - id
+                - message
+              properties:
+                id:
+                  type: integer
+                  description: ID видео
+                message:
+                  type: string
+                  description: Текст комментария
+                parent_id:
+                  type: integer
+                  description: ID родительского комментария
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    OAuth1:
+      type: oauth
+      description: OAuth 1.0 авторизация для uCoz API
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://www.ucoz.ru/'
+          tokenUrl: 'https://www.ucoz.ru/'
+          scopes: {}
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+
+    VideoEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        hgu_title:
+          type: string
+        description:
+          type: string
+        embobject:
+          type: string
+          description: HTML-код видео
+        entry_url:
+          type: string
+          format: uri
+        author_name:
+          type: string
+        author_email:
+          type: string
+          format: email
+        author_site:
+          type: string
+          format: uri
+        who_add:
+          type: string
+        user:
+          type: string
+        add_date:
+          type: string
+        reads:
+          type: integer
+        plays:
+          type: integer
+          description: Количество воспроизведений
+        comments:
+          type: string
+          enum: [yes, no]
+        ontop:
+          type: string
+          enum: [yes, no]
+        pending:
+          type: string
+          enum: [yes, no]
+        subscribe:
+          type: string
+          enum: [yes, no]
+        rating:
+          type: string
+        duration:
+          type: string
+        language:
+          type: string
+        year:
+          type: array
+          items:
+            type: string
+        acters:
+          type: string
+        producer:
+          type: string
+        screenshot:
+          type: string
+          format: uri
+        other1:
+          type: string
+        other2:
+          type: string
+        other3:
+          type: string
+        other4:
+          type: string
+        other5:
+          type: string
+
+    VideoEntriesResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        pages_list:
+          type: string
+        per_page:
+          type: integer
+        sort:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/VideoEntry'
+        total_video:
+          type: integer
+
+    VideoEntryResponse:
+      allOf:
+        - $ref: '#/components/schemas/VideoEntry'
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+        hgu_title:
+          type: string
+        position:
+          type: integer
+        entry_count:
+          type: integer
+
+    CategoriesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Category'
+
+    Channel:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+
+    ChannelsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Channel'
+
+    ChannelResponse:
+      allOf:
+        - $ref: '#/components/schemas/Channel'
+
+    Comment:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        author:
+          type: string
+        add_date:
+          type: string
+        parent_id:
+          type: integer
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    CommentsResponse:
+      type: object
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    CommentResponse:
+      allOf:
+        - $ref: '#/components/schemas/Comment'

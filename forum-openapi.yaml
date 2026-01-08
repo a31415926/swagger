@@ -1,0 +1,338 @@
+openapi: 3.0.3
+info:
+  title: uCoz API - Forum Module
+  description: |
+    API документация для модуля "Форум" uCoz.
+    
+    ## Авторизация OAuth 1.0
+    
+    Все запросы к API требуют авторизации по протоколу OAuth 1.0.
+  version: 1.0.0
+  contact:
+    name: uCoz API Support
+    url: https://api.ucoz.net
+
+servers:
+  - url: http://yoursite.ucoz.ru/uapi
+    description: Базовый URL вашего сайта
+
+security:
+  - OAuth1: []
+
+paths:
+  /forum/messages:
+    get:
+      summary: Получить сообщения темы
+      description: Получить все сообщения определенной темы форума
+      operationId: getForumMessages
+      tags:
+        - Messages
+      parameters:
+        - name: id
+          in: query
+          description: ID темы
+          required: true
+          schema:
+            type: integer
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForumMessagesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить сообщение
+      description: Добавить новое сообщение в тему форума
+      operationId: addForumMessage
+      tags:
+        - Messages
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - id
+                - message
+              properties:
+                id:
+                  type: integer
+                  description: ID темы
+                message:
+                  type: string
+                  description: Текст сообщения
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForumMessageResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать сообщение
+      description: Отредактировать существующее сообщение
+      operationId: updateForumMessage
+      tags:
+        - Messages
+      parameters:
+        - name: id
+          in: query
+          description: ID сообщения
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                  description: Текст сообщения
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForumMessageResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Удалить сообщение
+      description: Удалить сообщение из темы
+      operationId: deleteForumMessage
+      tags:
+        - Messages
+      parameters:
+        - name: id
+          in: query
+          description: ID сообщения
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /forum/forum:
+    get:
+      summary: Получить список форумов и тем
+      description: Получить список форумов и тем
+      operationId: getForumForums
+      tags:
+        - Forums
+      parameters:
+        - name: id
+          in: query
+          description: ID форума или темы
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForumForumsResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Создать тему
+      description: Создать новую тему в форуме
+      operationId: addForumTopic
+      tags:
+        - Forums
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - forum_id
+                - title
+                - message
+              properties:
+                forum_id:
+                  type: integer
+                  description: ID форума
+                title:
+                  type: string
+                  description: Название темы
+                message:
+                  type: string
+                  description: Первое сообщение темы
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForumTopicResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    OAuth1:
+      type: oauth
+      description: OAuth 1.0 авторизация для uCoz API
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://www.ucoz.ru/'
+          tokenUrl: 'https://www.ucoz.ru/'
+          scopes: {}
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+
+    ForumMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        author:
+          type: string
+        add_date:
+          type: string
+        edit_date:
+          type: string
+        topic:
+          $ref: '#/components/schemas/ForumTopic'
+        forum:
+          $ref: '#/components/schemas/Forum'
+
+    ForumMessagesResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        pages_list:
+          type: string
+        per_page:
+          type: integer
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForumMessage'
+        total_messages:
+          type: integer
+
+    ForumMessageResponse:
+      allOf:
+        - $ref: '#/components/schemas/ForumMessage'
+
+    ForumTopic:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        url:
+          type: string
+          format: uri
+        messages_count:
+          type: integer
+        last_message_date:
+          type: string
+        forum:
+          $ref: '#/components/schemas/Forum'
+
+    ForumTopicResponse:
+      allOf:
+        - $ref: '#/components/schemas/ForumTopic'
+
+    Forum:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+        topics_count:
+          type: integer
+        messages_count:
+          type: integer
+
+    ForumForumsResponse:
+      type: object
+      properties:
+        forums:
+          type: array
+          items:
+            $ref: '#/components/schemas/Forum'
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/ForumTopic'

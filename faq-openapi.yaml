@@ -1,0 +1,446 @@
+openapi: 3.0.3
+info:
+  title: uCoz API - FAQ Module
+  description: |
+    API документация для модуля "FAQ" (Вопросы и ответы) uCoz.
+    
+    ## Авторизация OAuth 1.0
+    
+    Все запросы к API требуют авторизации по протоколу OAuth 1.0.
+  version: 1.0.0
+  contact:
+    name: uCoz API Support
+    url: https://api.ucoz.net
+
+servers:
+  - url: http://yoursite.ucoz.ru/uapi
+    description: Базовый URL вашего сайта
+
+security:
+  - OAuth1: []
+
+paths:
+  /faq:
+    get:
+      summary: Получить все материалы модуля
+      description: Получить список всех вопросов и ответов модуля FAQ
+      operationId: getFaqEntries
+      tags:
+        - Entries
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы
+          required: false
+          schema:
+            type: integer
+        - name: id
+          in: query
+          description: ID определенного материала
+          required: false
+          schema:
+            type: integer
+        - name: category
+          in: query
+          description: ID категории
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FaqEntriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить вопрос-ответ
+      description: Добавить новый вопрос-ответ в модуль FAQ
+      operationId: addFaqEntry
+      tags:
+        - Entries
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - category
+                - question
+                - answer
+              properties:
+                category:
+                  type: integer
+                  description: ID категории (обязательно)
+                question:
+                  type: string
+                  description: Вопрос
+                answer:
+                  type: string
+                  description: Ответ
+                ontop:
+                  type: string
+                  enum: [yes, no]
+                  description: Показывать всегда сверху?
+                other1:
+                  type: string
+                other2:
+                  type: string
+                other3:
+                  type: string
+                other4:
+                  type: string
+                other5:
+                  type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FaqEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать вопрос-ответ
+      description: Отредактировать существующий вопрос-ответ
+      operationId: updateFaqEntry
+      tags:
+        - Entries
+      parameters:
+        - name: id
+          in: query
+          description: ID материала
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                question:
+                  type: string
+                answer:
+                  type: string
+                ontop:
+                  type: string
+                  enum: [yes, no]
+                hgu_title:
+                  type: string
+                other1:
+                  type: string
+                other2:
+                  type: string
+                other3:
+                  type: string
+                other4:
+                  type: string
+                other5:
+                  type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FaqEntryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /faq/posts:
+    delete:
+      summary: Удалить вопрос-ответ
+      description: Удалить вопрос-ответ из модуля
+      operationId: deleteFaqEntry
+      tags:
+        - Entries
+      parameters:
+        - name: id
+          in: query
+          description: ID материала
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /faq/category:
+    get:
+      summary: Получить список категорий
+      description: Получить все категории модуля FAQ
+      operationId: getFaqCategories
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID определенной категории
+          required: false
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoriesResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: Добавить категорию
+      description: Добавить новую категорию
+      operationId: addFaqCategory
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  description: Название категории
+                description:
+                  type: string
+                hgu_title:
+                  type: string
+                position:
+                  type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Отредактировать категорию
+      description: Отредактировать существующую категорию
+      operationId: updateFaqCategory
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID категории
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                hgu_title:
+                  type: string
+                position:
+                  type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Удалить категорию
+      description: Удалить категорию
+      operationId: deleteFaqCategory
+      tags:
+        - Categories
+      parameters:
+        - name: id
+          in: query
+          description: ID категории
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    OAuth1:
+      type: oauth
+      description: OAuth 1.0 авторизация для uCoz API
+      flows:
+        authorizationCode:
+          authorizationUrl: 'https://www.ucoz.ru/'
+          tokenUrl: 'https://www.ucoz.ru/'
+          scopes: {}
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+
+    FaqEntry:
+      type: object
+      properties:
+        id:
+          type: integer
+        question:
+          type: string
+          description: Вопрос
+        answer:
+          type: string
+          description: Ответ
+        hgu_title:
+          type: string
+        entry_url:
+          type: string
+          format: uri
+        add_date:
+          type: string
+        reads:
+          type: integer
+        ontop:
+          type: string
+          enum: [yes, no]
+        category:
+          $ref: '#/components/schemas/Category'
+        other1:
+          type: string
+        other2:
+          type: string
+        other3:
+          type: string
+        other4:
+          type: string
+        other5:
+          type: string
+
+    FaqEntriesResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+        pages_list:
+          type: string
+        per_page:
+          type: integer
+        faq:
+          type: array
+          items:
+            $ref: '#/components/schemas/FaqEntry'
+        total_faq:
+          type: integer
+
+    FaqEntryResponse:
+      allOf:
+        - $ref: '#/components/schemas/FaqEntry'
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        url:
+          type: string
+          format: uri
+        hgu_title:
+          type: string
+        position:
+          type: integer
+        entry_count:
+          type: integer
+        access2category:
+          type: array
+        access2add:
+          type: array
+
+    CategoriesResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/Category'
+
+    CategoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/Category'
