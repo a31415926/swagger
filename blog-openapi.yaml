@@ -95,6 +95,10 @@ paths:
                   type: string
                   format: binary
                   description: Изображение материала (file2, file3..file20)
+                cover:
+                  type: string
+                  format: binary
+                  description: Обложка материала (изображение)
                 meta_title:
                   type: string
                   description: Meta Title
@@ -165,6 +169,10 @@ paths:
                   enum: [yes, no]
                 hgu_title:
                   type: string
+                cover:
+                  type: string
+                  format: binary
+                  description: Обложка материала (изображение)
                 meta_title:
                   type: string
                 meta_description:

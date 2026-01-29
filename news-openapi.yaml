@@ -124,6 +124,10 @@ paths:
                   type: string
                   enum: [yes, no]
                   description: Заменять теги переноса на <br /> для полного описания
+                cover:
+                  type: string
+                  format: binary
+                  description: Обложка материала (изображение)
                 other1:
                   type: string
                   description: Дополнительное поле 1
@@ -194,6 +198,10 @@ paths:
                 hgu_title:
                   type: string
                   description: ЧПУ материала
+                cover:
+                  type: string
+                  format: binary
+                  description: Обложка материала (изображение)
                 other1:
                   type: string
                 other2:
