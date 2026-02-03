@@ -4,34 +4,28 @@ info:
   description: |
     API документация для модуля "Новости сайта" uCoz.
     
-    ## Авторизация OAuth 1.0
+    ## Авторизация Bearer Token
     
-    Все запросы к API требуют авторизации по протоколу OAuth 1.0.
+    Все запросы к API требуют авторизации через Bearer токен.
     
-    ### Необходимые параметры:
-    - `oauth_consumer_key` - ключ приложения (получается при регистрации приложения)
-    - `oauth_consumer_secret` - секрет приложения (получается при регистрации приложения)
-    - `oauth_token` - токен доступа пользователя
-    - `oauth_token_secret` - секрет токена доступа
-    - `oauth_nonce` - уникальная случайная строка для каждого запроса
-    - `oauth_signature_method` - метод подписи (всегда `HMAC-SHA1`)
-    - `oauth_timestamp` - временная метка запроса (Unix timestamp)
-    - `oauth_version` - версия OAuth (всегда `1.0`)
-    - `oauth_signature` (или `auth_signature`) - подпись запроса, вычисленная по алгоритму HMAC-SHA1
+    Для использования API необходимо:
+    1. Получить Bearer токен (токен доступа)
+    2. Указать домен вашего сайта в поле "Server" выше
+    3. Ввести токен в поле "Authorize" (кнопка справа вверху)
     
-    ### Формирование подписи:
-    Подпись формируется согласно спецификации OAuth 1.0 на основе всех параметров запроса.
-    Все параметры должны быть отсортированы, закодированы и объединены в строку подписи.
-    
-    Для получения токенов доступа необходимо зарегистрировать приложение на сайте uCoz.
+    Для получения токена доступа необходимо зарегистрировать приложение на сайте uCoz.
   version: 1.0.0
   contact:
     name: uCoz API Support
     url: https://api.ucoz.net
 
 servers:
-  - url: http://yoursite.ucoz.ru/uapi
-    description: Базовый URL вашего сайта
+  - url: https://{site}/uapi
+    description: Базовый URL вашего сайта (укажите свой домен)
+    variables:
+      site:
+        default: yoursite.ucoz.ru
+        description: Домен вашего сайта
 
 paths:
   # ============================================
@@ -46,6 +40,8 @@ paths:
       operationId: getNewsEntries
       tags:
         - Entries
+      security:
+        - bearerAuth: []
       parameters:
         - name: page
           in: query
@@ -85,6 +81,8 @@ paths:
       operationId: addNewsEntry
       tags:
         - Entries
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -163,6 +161,8 @@ paths:
       operationId: updateNewsEntry
       tags:
         - Entries
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: query
@@ -233,6 +233,8 @@ paths:
       operationId: deleteNewsEntry
       tags:
         - Entries
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: query
@@ -266,6 +268,8 @@ paths:
       operationId: updateNewsTags
       tags:
         - Entries
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -305,6 +309,8 @@ paths:
       operationId: getNewsCategories
       tags:
         - Categories
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: query
@@ -332,6 +338,8 @@ paths:
       operationId: addNewsCategory
       tags:
         - Categories
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -373,6 +381,8 @@ paths:
       operationId: updateNewsCategory
       tags:
         - Categories
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: query
@@ -415,6 +425,8 @@ paths:
       operationId: deleteNewsCategory
       tags:
         - Categories
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: query
@@ -446,6 +458,8 @@ paths:
       operationId: getNewsComments
       tags:
         - Comments
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: query
@@ -473,6 +487,8 @@ paths:
       operationId: addNewsComment
       tags:
         - Comments
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -512,6 +528,8 @@ paths:
       operationId: updateNewsComment
       tags:
         - Comments
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: query
@@ -549,6 +567,8 @@ paths:
       operationId: deleteNewsComment
       tags:
         - Comments
+      security:
+        - bearerAuth: []
       parameters:
         - name: id
           in: query
@@ -571,6 +591,12 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Введите Bearer токен для авторизации
   schemas:
     ErrorResponse:
       type: object

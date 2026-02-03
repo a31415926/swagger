@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>uCoz API - Модуль "Новости сайта"</title>
     <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+    <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
     <style>
         html {
             box-sizing: border-box;
@@ -18,16 +19,56 @@
             margin:0;
             background: #fafafa;
         }
+        .file-loader {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            font-family: Arial, sans-serif;
+        }
+        .file-loader input[type="file"] {
+            margin-bottom: 10px;
+        }
+        .file-loader button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .file-loader button:hover {
+            background: #2563eb;
+        }
     </style>
 </head>
 <body>
+    <div class="file-loader" id="fileLoader" style="display: none;">
+        <p><strong>Загрузка без сервера:</strong></p>
+        <input type="file" id="yamlFile" accept=".yaml,.yml" />
+        <button onclick="loadYamlFile()">Загрузить YAML</button>
+        <p style="font-size: 12px; margin-top: 10px; color: #666;">
+            Или установите Python и используйте веб-сервер
+        </p>
+    </div>
     <div id="swagger-ui"></div>
     <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
     <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
     <script>
-        window.onload = function() {
-            const ui = SwaggerUIBundle({
-                url: "./news-openapi.yaml",
+        let swaggerUI = null;
+        
+        function initSwaggerUI(spec) {
+            if (swaggerUI) {
+                swaggerUI.specActions.updateSpec(spec);
+                return;
+            }
+            
+            swaggerUI = SwaggerUIBundle({
+                spec: spec,
                 dom_id: '#swagger-ui',
                 deepLinking: true,
                 presets: [
@@ -37,8 +78,87 @@
                 plugins: [
                     SwaggerUIBundle.plugins.DownloadUrl
                 ],
-                layout: "StandaloneLayout"
+                layout: "StandaloneLayout",
+                tryItOutEnabled: true,
+                supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+                onComplete: function() {
+                    console.log("Swagger UI загружен");
+                    document.getElementById('fileLoader').style.display = 'none';
+                },
+                onFailure: function(data) {
+                    console.error("Ошибка загрузки Swagger UI:", data);
+                    document.getElementById('swagger-ui').innerHTML = 
+                        '<div style="padding: 20px; color: red;">' +
+                        '<h2>Ошибка загрузки документации</h2>' +
+                        '<p>Проверьте консоль браузера (F12) для подробностей</p>' +
+                        '</div>';
+                }
             });
+        }
+        
+        function loadYamlFile() {
+            const fileInput = document.getElementById('yamlFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Пожалуйста, выберите YAML файл');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const yamlContent = e.target.result;
+                    const spec = jsyaml.load(yamlContent);
+                    initSwaggerUI(spec);
+                } catch (error) {
+                    alert('Ошибка парсинга YAML: ' + error.message);
+                    console.error(error);
+                }
+            };
+            reader.readAsText(file);
+        }
+        
+        window.onload = function() {
+            const isFileProtocol = window.location.protocol === 'file:';
+            
+            if (isFileProtocol) {
+                // Если открыто через file://, показываем загрузчик файла
+                document.getElementById('fileLoader').style.display = 'block';
+                document.getElementById('swagger-ui').innerHTML = 
+                    '<div style="padding: 40px; text-align: center;">' +
+                    '<h2>Загрузка YAML файла</h2>' +
+                    '<p>Используйте форму справа вверху для загрузки файла news-openapi.yaml</p>' +
+                    '<p style="color: #666; margin-top: 20px;">' +
+                    'Или установите Python и запустите веб-сервер:<br>' +
+                    '<code style="background: #f0f0f0; padding: 5px 10px; border-radius: 3px; display: inline-block; margin-top: 10px;">python -m http.server 8000</code>' +
+                    '</p>' +
+                    '</div>';
+            } else {
+                // Пытаемся загрузить через fetch (если есть веб-сервер)
+                fetch("./news-openapi.yaml")
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.text();
+                    })
+                    .then(yamlContent => {
+                        console.log("YAML файл загружен успешно");
+                        const spec = jsyaml.load(yamlContent);
+                        initSwaggerUI(spec);
+                    })
+                    .catch(error => {
+                        console.error("Ошибка загрузки YAML:", error);
+                        // Показываем загрузчик файла как fallback
+                        document.getElementById('fileLoader').style.display = 'block';
+                        document.getElementById('swagger-ui').innerHTML = 
+                            '<div style="padding: 20px; color: orange;">' +
+                            '<h2>Не удалось загрузить YAML автоматически</h2>' +
+                            '<p>Используйте форму справа вверху для ручной загрузки файла news-openapi.yaml</p>' +
+                            '<p style="color: #666;">Или убедитесь, что веб-сервер запущен и файл доступен</p>' +
+                            '</div>';
+                    });
+            }
         };
     </script>
 </body>
