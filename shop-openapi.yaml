@@ -631,33 +631,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /shop/invoices/hide:
     put:
-      summary: Операции с заказами
-      description: |
-        Назначение группы, курьера или статуса заказам.
-        
-        **Режимы работы:**
-        
-        ### mode=hide - Назначение группы заказу
-        - Обязательные: `mode=hide`, `ids`
-        - Опциональные: `hide` (по умолчанию 0 - "В работе")
-        
-        ### mode=setCourier - Назначение курьера заказу
-        - Обязательные: `mode=setCourier`, `ids`, `group_courier`
-        
-        ### mode=status - Назначение статуса заказу
-        - Обязательные: `mode=status`, `ids`, `status`
-      operationId: updateInvoices
+      summary: Назначение группы заказу
+      description: Назначить группу заказам
+      operationId: setInvoicesHide
       tags:
         - Orders
       parameters:
-        - name: mode
-          in: query
-          required: true
-          description: Режим операции
-          schema:
-            type: string
-            enum: [hide, setCourier, status]
         - name: ids
           in: query
           description: ID заказа(ов), через запятую
@@ -667,7 +648,7 @@ paths:
         - name: hide
           in: query
           description: |
-            Группа заказа (обязателен для mode=hide).
+            Группа заказа.
             
             Возможные значения:
             - 0 - "В работе" (по умолчанию)
@@ -678,19 +659,75 @@ paths:
             type: integer
             enum: [0, 1, 2]
             default: 0
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoicesUpdateResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /shop/invoices/setCourier:
+    put:
+      summary: Назначение курьера заказу
+      description: Назначить курьера заказам
+      operationId: setInvoicesCourier
+      tags:
+        - Orders
+      parameters:
+        - name: ids
+          in: query
+          description: ID заказа(ов), через запятую
+          required: true
+          schema:
+            type: string
         - name: group_courier
           in: query
           description: |
-            Логин пользователя-курьера (обязателен для mode=setCourier).
+            Логин пользователя-курьера.
             
             Логин пользователя, которого нужно назначить курьером для заказа(ов).
-          required: false
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvoicesUpdateResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /shop/invoices/status:
+    put:
+      summary: Назначение статуса заказу
+      description: Назначить статус заказам
+      operationId: setInvoicesStatus
+      tags:
+        - Orders
+      parameters:
+        - name: ids
+          in: query
+          description: ID заказа(ов), через запятую
+          required: true
           schema:
             type: string
         - name: status
           in: query
           description: |
-            ID статуса заказа (обязателен для mode=status).
+            ID статуса заказа.
             
             Возможные значения:
             - 0 - Новый
@@ -702,7 +739,7 @@ paths:
             - 7 - Доставлен
             - 8 - Завершён
             - 9 - Отменён
-          required: false
+          required: true
           schema:
             type: integer
             enum: [0, 1, 2, 3, 4, 5, 7, 8, 9]
@@ -838,6 +875,100 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/OrderResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # ============================================
+  # РЕДАКТИРОВАНИЕ ТОВАРОВ (EDIT GOODS)
+  # ============================================
+  /shop/editgoods/variation:
+    get:
+      summary: Получить вариацию товара
+      description: Получить данные вариации товара по ID товара
+      operationId: getVariation
+      tags:
+        - EditGoods
+      parameters:
+        - name: id
+          in: query
+          description: ID товара
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariationResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Обновить вариацию товара
+      description: Обновить данные вариации товара
+      operationId: updateVariation
+      tags:
+        - EditGoods
+      parameters:
+        - name: id
+          in: query
+          description: ID товара
+          required: true
+          schema:
+            type: integer
+        - name: variationId
+          in: query
+          description: ID вариации
+          required: true
+          schema:
+            type: integer
+        - name: art
+          in: query
+          description: Артикул
+          required: false
+          schema:
+            type: string
+        - name: stock
+          in: query
+          description: Остаток
+          required: false
+          schema:
+            type: integer
+        - name: price
+          in: query
+          description: Цена
+          required: false
+          schema:
+            type: number
+        - name: price_old
+          in: query
+          description: Старая цена
+          required: false
+          schema:
+            type: number
+        - name: weight
+          in: query
+          description: Вес
+          required: false
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariationUpdateResponse'
         default:
           description: Ошибка
           content:
@@ -1362,3 +1493,58 @@ components:
             order_data:
               type: object
               description: Секция с данными по заказу
+
+    # ============================================
+    # СХЕМЫ ДЛЯ РЕДАКТИРОВАНИЯ ТОВАРОВ
+    # ============================================
+    VariationData:
+      type: object
+      description: Данные вариации товара
+      properties:
+        id:
+          type: integer
+          description: ID вариации
+        art:
+          type: string
+          description: Артикул
+        price:
+          type: number
+          description: Цена
+        price_old:
+          type: number
+          description: Старая цена
+        variation_crc:
+          type: string
+          description: CRC вариации
+        weight:
+          type: number
+          description: Вес
+        variation_str:
+          type: string
+          description: Строковое представление вариации
+        var_data:
+          type: object
+          description: Данные опций вариации. Ключи - ID опций, значения - ID выбранных значений
+          additionalProperties:
+            type: integer
+
+    VariationResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            variation:
+              $ref: '#/components/schemas/VariationData'
+
+    VariationUpdateResponse:
+      type: object
+      properties:
+        success:
+          type: object
+          properties:
+            msg:
+              type: string
+              example: "Данные успешно сохранены"
+            variation:
+              $ref: '#/components/schemas/VariationData'
